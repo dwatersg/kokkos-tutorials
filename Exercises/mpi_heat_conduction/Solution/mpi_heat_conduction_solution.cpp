@@ -9,7 +9,24 @@ struct SpaceInstance {
 };
 
 #ifndef KOKKOS_ENABLE_DEBUG
-#ifdef KOKKOS_ENABLE_CUDA
+#ifdef KOKKOS_ENABLE_HIP
+template <>
+struct SpaceInstance<Kokkos::Experimental::HIP> {
+  static Kokkos::Experimental::HIP create() {
+    hipStream_t stream;
+    assert(hipStreamCreate(&stream) == hipSuccess);
+    return Kokkos::Experimental::HIP(stream);
+  }
+  static void destroy(Kokkos::Experimental::HIP& space) {
+    hipStream_t stream = space.hip_stream();
+
+    // Stream destruction must currently be disabled here. 
+    // Otherwise it leads to an error when the HIP SpaceInstance object is destroyed,
+    // because its destructor inside Kokkos calls a fence using this stream.
+    // hipStreamDestroy(stream);
+  }
+};
+#elif defined KOKKOS_ENABLE_CUDA
 template <>
 struct SpaceInstance<Kokkos::Cuda> {
   static Kokkos::Cuda create() {
@@ -115,7 +132,7 @@ struct System {
   // Temperature and delta Temperature
   Kokkos::View<double***> T, dT;
   // Halo data
-  using buffer_t = Kokkos::View<double**,Kokkos::LayoutLeft, Kokkos::CudaSpace>; 
+  using buffer_t = Kokkos::View<double**>;
   buffer_t T_left, T_right, T_up, T_down, T_front, T_back;
   buffer_t T_left_out, T_right_out, T_up_out, T_down_out, T_front_out, T_back_out;
 
