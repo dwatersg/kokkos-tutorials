@@ -268,7 +268,7 @@ struct System {
       Kokkos::fence();
       double T_ave = compute_T();
       T_ave/=1e-9*(X * Y * Z);
-      if((t%I == 0 || t==N) && (comm.me==0)) {
+      if((T != 0 && t%I == 0 || t==N) && (comm.me==0)) {
         double time = timer.seconds();
         printf("%i T=%lf Time (%lf %lf) (total, since_last_report) seconds\n",t,T_ave,time,time - old_time);
         old_time = time;
