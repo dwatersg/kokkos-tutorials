@@ -87,9 +87,6 @@ struct CommHelper {
     up    = y==ny-1?-1:me+nx;
     front = z==0 ?-1:me-nx*ny;
     back  = z==nz-1?-1:me+nx*ny;
-
-    printf("NumRanks: %i Me: %i Grid: %i %i %i MyPos: %i %i %i\n",nranks,me,nx,ny,nz,x,y,z);
-    printf("Me: %i MyNeighs: %i %i %i %i %i %i\n",me,left,right,down,up,front,back);
   }
 
   template<class ViewType>
@@ -202,7 +199,6 @@ struct System {
     Z_hi = Z_lo + dZ;
     if(Z_hi>Z) Z_hi=Z;
 
-    printf("My Domain: %i (%i %i %i) (%i %i %i)\n",comm.me,X_lo,Y_lo,Z_lo,X_hi,Y_hi,Z_hi);
     T = Kokkos::View<double***>("System::T", X_hi - X_lo, Y_hi - Y_lo, Z_hi - Z_lo);
     dT = Kokkos::View<double***>("System::dT", T.extent(0), T.extent(1), T.extent(2));
     Kokkos::deep_copy(T,T0);
@@ -274,7 +270,7 @@ struct System {
       T_ave/=1e-9*(X * Y * Z);
       if((t%I == 0 || t==N) && (comm.me==0)) {
         double time = timer.seconds();
-        printf("%i T=%lf Time (%lf %lf)\n",t,T_ave,time,time - old_time);
+        printf("%i T=%lf Time (%lf %lf) (total, since_last_report) seconds\n",t,T_ave,time,time - old_time);
         old_time = time;
       }
     }
